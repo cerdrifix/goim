@@ -1,1 +1,1 @@
-# goim
+# GOlang Identity Manager
