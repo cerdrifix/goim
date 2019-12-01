@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  db:
+    container_name: db
+    image: postgres
+    hostname: db
+    ports:
+      - 10001:5432
+    networks:
+      - Net
+
+  process-engine:
+    container_name: process-engine
+    build: ./go-flow
+    environment:
+      HTTPS_CERTIFICATE_FILE: certs/localhost.crt
+      HTTPS_CERTIFICATE_KEY: certs/localhost.key
+      DB_SERVER: db
+      DB_PORT: 5432
+      DB_NAME: goim
+      DB_USERNAME: cerdrifix
+      DB_PASSWORD: cerdrifix1234
+      SERVER_ADDRESS: :8443
+    networks:
+      - Net
+    volumes:
+      - .:/go/src/GoIM/go-flow
+    ports:
+      - 8444:8443
+    depends_on:
+      - db
+    links:
+      - db
+    labels:
+      kompose.service.type: loadBalancer
+
+  scheduler:
+    container_name: scheduler
+    build: ./scheduler
+    networks:
+      - Net
+    volumes:
+      - .:/go/src/GoIM/scheduler
+    depends_on:
+      - db
+    links:
+      - db
+
+networks:
+  Net:
+    driver: bridge
